@@ -138,6 +138,13 @@ interface VpnEventParams {
 }
 ```
 
+### Traffic metrics
+
+Both Android and iOS log byte count statistics every two seconds while a VPN
+connection is active. These logs show total bytes received and sent as well as
+the delta for each interval. Check the native logs (Logcat on Android or the
+Xcode console on iOS) to view these metrics.
+
 ## Attention
 
 ### `xxx.ovpn` configuration file

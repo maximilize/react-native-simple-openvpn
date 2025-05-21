@@ -26,6 +26,8 @@
 
 @property(nonatomic, strong) OpenVPNReachability *vpnReachability;
 
+@property(nonatomic, strong) NSTimer *statsTimer;
+
 typedef void (^StartHandler)(NSError *_Nullable);
 typedef void (^StopHandler)(void);
 

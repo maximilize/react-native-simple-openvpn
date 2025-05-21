@@ -229,6 +229,10 @@ export default App;
 
 For more, read the [API Reference](docs/Reference.md)
 
+Traffic metrics are written to the native logs every two seconds while
+connected. Check Logcat on Android or the Xcode console on iOS to see the byte
+counts.
+
 ## OpenVPN library
 
 The following items were used in this project

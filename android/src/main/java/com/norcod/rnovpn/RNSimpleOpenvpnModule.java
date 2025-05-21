@@ -68,7 +68,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements VpnStatus.StateListener {
+public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule
+    implements VpnStatus.StateListener, VpnStatus.ByteCountListener {
 
   private String TAG = RNSimpleOpenvpnModule.class.getSimpleName();
   private HashMap<String, Object> ovpnOptions;
@@ -128,6 +129,7 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
     reactContext = context;
     reactContext.addActivityEventListener(mActivityEventListener);
     VpnStatus.addStateListener(this);
+    VpnStatus.addByteCountListener(this);
 
     Intent intent = new Intent(context, OpenVPNService.class);
     intent.setAction(OpenVPNService.START_SERVICE);
@@ -343,6 +345,12 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
     params.putString("message", state);
     params.putString("level", level.toString());
     sendEvent("stateChanged", params);
+  }
+
+  @Override
+  public void updateByteCount(long in, long out, long diffIn, long diffOut) {
+    Log.d(TAG,
+        "bytes in " + in + " (" + diffIn + ") - bytes out " + out + " (" + diffOut + ")");
   }
 
   public void setConnectedVPN(String uuid) {}

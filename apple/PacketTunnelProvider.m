@@ -116,6 +116,7 @@
         self.startHandler(nil);
       }
       self.startHandler = nil;
+      [self startStatsLogging];
       break;
     case OpenVPNAdapterEventDisconnected:
       if (self.vpnReachability.isTracking) {
@@ -125,6 +126,7 @@
         self.stopHandler();
       }
       self.stopHandler = nil;
+      [self stopStatsLogging];
       break;
     case OpenVPNAdapterEventReconnecting:
       self.reasserting = true;
@@ -154,6 +156,31 @@
 - (void)openVPNAdapter:(OpenVPNAdapter *)openVPNAdapter handleLogMessage:(NSString *)logMessage {
   // Handle log messages
   NSLog(@"PacketTunnelProvider: openVPNAdapter: logMSg: %@", logMessage);
+}
+
+- (void)startStatsLogging {
+  if (!self.statsTimer) {
+    self.statsTimer =
+        [NSTimer scheduledTimerWithTimeInterval:2
+                                         target:self
+                                       selector:@selector(logStats)
+                                       userInfo:nil
+                                        repeats:YES];
+  }
+}
+
+- (void)stopStatsLogging {
+  if (self.statsTimer) {
+    [self.statsTimer invalidate];
+    self.statsTimer = nil;
+  }
+}
+
+- (void)logStats {
+  OpenVPNStatistics *stats = self.vpnAdapter.statistics;
+  NSLog(@"PacketTunnelProvider: bytes in %llu - bytes out %llu",
+        (unsigned long long)stats.bytesIn,
+        (unsigned long long)stats.bytesOut);
 }
 
 - (void)handleAppMessage:(NSData *)messageData completionHandler:(void (^)(NSData *))completionHandler {
