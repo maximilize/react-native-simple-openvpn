@@ -32,6 +32,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
+import android.os.Build;
 
 import java.util.HashSet;
 import java.util.List;
@@ -138,8 +139,14 @@ public class OrbotHelper {
      */
     public synchronized OrbotHelper addStatusCallback(Context c, StatusCallback cb) {
         if (statusCallbacks.size() == 0) {
-            c.getApplicationContext().registerReceiver(orbotStatusReceiver,
-                    new IntentFilter(OrbotHelper.ACTION_STATUS));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                c.getApplicationContext().registerReceiver(orbotStatusReceiver,
+                        new IntentFilter(OrbotHelper.ACTION_STATUS),
+                        Context.RECEIVER_EXPORTED);
+            } else {
+                c.getApplicationContext().registerReceiver(orbotStatusReceiver,
+                        new IntentFilter(OrbotHelper.ACTION_STATUS));
+            }
             mContext = c.getApplicationContext();
         }
         if (!checkTorReceier(c))

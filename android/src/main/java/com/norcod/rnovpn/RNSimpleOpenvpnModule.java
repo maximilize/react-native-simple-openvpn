@@ -140,6 +140,14 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
   }
 
   @Override
+  public void invalidate() {
+    super.invalidate();
+    reactContext.removeActivityEventListener(mActivityEventListener);
+    VpnStatus.removeStateListener(this);
+    reactContext.unbindService(mConnection);
+  }
+
+  @Override
   public Map<String, Object> getConstants() {
     final Map<String, Object> constants = new HashMap<>();
     final Map<String, Object> vpnState = new HashMap<>();
@@ -180,7 +188,11 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
   @ReactMethod
   public void connect(ReadableMap options, Promise promise) {
     ovpnOptions = options.toHashMap();
-    prepareVpn(promise);
+    boolean foreground = false;
+    if (options.hasKey("foreground")) {
+      foreground = options.getBoolean("foreground");
+    }
+    prepareVpn(foreground, promise);
   }
 
   @ReactMethod
@@ -201,19 +213,26 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
     promise.resolve(getVpnState(VpnStatus.getStatus()));
   }
 
-  private void prepareVpn(final Promise promise) {
-    Activity currentActivity = getCurrentActivity();
+  private void prepareVpn(final boolean foreground, final Promise promise) {
+    Activity currentActivity = foreground ? getCurrentActivity() : null;
+    Context context = foreground ? currentActivity : getReactApplicationContext();
 
-    if (currentActivity == null) {
-      promise.reject("E_ACTIVITY_ERROR", "Activity doesn't exist");
+    if (context == null) {
+      promise.reject("E_CONTEXT_ERROR", "Context doesn't exist");
       return;
     }
 
     vpnPromise = promise;
-    Intent intent = VpnService.prepare(currentActivity);
+    Intent intent = VpnService.prepare(context);
 
     if (intent != null) {
-      currentActivity.startActivityForResult(intent, START_VPN_PROFILE);
+      // For background operation, we need to handle this differently
+      // Since we can't start an activity from background
+      if (foreground) {
+        currentActivity.startActivityForResult(intent, START_VPN_PROFILE);
+      } else {
+        promise.reject("E_VPN_PERMISSION", "VPN permission not granted. Please grant VPN permission from app settings first.");
+      }
       return;
     }
 

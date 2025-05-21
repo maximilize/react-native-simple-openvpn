@@ -109,8 +109,11 @@ public class ExternalOpenVPNService extends Service implements StateListener {
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         mHandler.setService(this);
         IntentFilter uninstallBroadcast = new IntentFilter(Intent.ACTION_PACKAGE_REMOVED );
-        registerReceiver(mBroadcastReceiver, uninstallBroadcast);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mBroadcastReceiver, uninstallBroadcast, Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(mBroadcastReceiver, uninstallBroadcast);
+        }
     }
 
     private final IOpenVPNAPIService.Stub mBinder = new IOpenVPNAPIService.Stub() {

@@ -18,6 +18,7 @@
  */
 
 interface VpnOptions {
+  foreground?: boolean;
   remoteAddress?: string;
   ovpnString?: string;
   ovpnFileName?: string;
